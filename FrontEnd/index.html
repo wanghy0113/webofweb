@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript">
+        function WebSocketInit()
+        {
+
+            if ("WebSocket" in window)
+            {
+                // Let us open a web socket
+                //var ws = new WebSocket("ws://54.148.253.239:61616/echo");
+                var ws = new WebSocket("ws://localhost:9988/echo");
+                var depth_num = {};
+                var nodes = {};
+                ws.onopen = function()
+                {
+                    // Web Socket is connected, send data using send()
+                    //ws.send("1");
+                };
+                ws.onmessage = function (evt)
+                {
+                    var received_msg = evt.data+"";
+                    var node = JSON.parse(received_msg.substring(1,received_msg.length-1));
+                    if(!nodes[node.node_url])
+                    {
+                        nodes[node["node_url"]] = true;
+                        document.write("<p>"+node["node_url"]+"</p>");
+                    }
+                    var depth = node.node_depth;
+                    if(!depth_num[depth]) depth_num[depth] = 1;
+                    else depth_num[depth]++;
+                    document.write("<p>"+JSON.stringify(depth_num)+"</p>");
+
+                };
+                ws.onclose = function()
+                {
+                    // websocket is closed.
+                };
+            }
+            else
+            {
+                // The browser doesn't support WebSocket
+                alert("WebSocket NOT supported by your Browser!");
+            }
+        }
+    </script>
+</head>
+<body>
+<div id="sse">
+    <a href="javascript:WebSocketInit()">Run WebSocket</a>
+</div>
+</body>
+</html>

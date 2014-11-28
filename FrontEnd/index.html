@@ -1,31 +1,38 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/config.js" charset="utf-8"></script>
+    <script type="text/javascript" src="js/graph.js" charset="utf-8"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <link href="css/layout.css" rel="stylesheet", type="text/css">
 </head>
 <body>
 <div id="sse">
     <a href="javascript:WebSocketInit()">Run WebSocket</a>
+</div>
+<div id="graph">
 </div>
 <script type="text/javascript">
     //main area
     var hei = 20;
     var svg = d3.select("body").append("svg").attr("width",main_dimension.width).attr("height",main_dimension.height);
     var theta_rate = [0, 1, 1/2, 3/2, 1/4, 3/4, 5/4, 7/4];
-    var force = d3.layout.force()
-            .charge(-120)
-            .linkDistance(30)
-            .size([main_dimension.width, main_dimension.height]);
+
+
     function WebSocketInit()
     {
         if ("WebSocket" in window)
         {
             // Let us open a web socket
             //var ws = new WebSocket("ws://54.148.253.239:61616/echo");
+
+            var graph = new myGraph("#graph");
             var ws = new WebSocket("ws://localhost:9988/echo");
             var one_depth_num = 0;
             var nodes = {};
+            var links = {};
             var num = 0;
             ws.onmessage = function (evt)
             {
@@ -40,45 +47,49 @@
                     if(depth==0)
                     {
                         //if it's the first node
-                        nodes[node["node_url"]] = {"depth":depth, "children":[], "parents":[], "id":"node"+num};
-                        svg.append("circle")
-                                .attr("r", circle_base_radius)
-                                .attr("cx", center_point.cx)
-                                .attr("cy", center_point.cy)
-                                .attr("id", nodes[node["node_url"]]["id"])
-                                .attr("fill", "red");
+                        nodes[node["node_url"]] = {"id":"node"+num,"depth":depth, "children":[], "parents":[]};
+                        graph.addNode("node"+num);
+//                        svg.append("circle")
+//                                .attr("r", circle_base_radius)
+//                                .attr("cx", center_point.cx)
+//                                .attr("cy", center_point.cy)
+//                                .attr("id", nodes[node["node_url"]]["id"])
+//                                .attr("fill", "red");
                         return;
                     }
                     var p = nodes[node["node_parent"]];
                     //add new node
-                    nodes[node["node_url"]] = {"depth":depth, "children":[], "parents":[node["node_parent"]],"id":"node"+num};
+                    nodes[node["node_url"]] = {"id":"node"+num, "depth":depth, "children":[], "parents":[node["node_parent"]]};
                     var p_chd = p["children"];
                     //add new node to its parent's children
                     p_chd[p_chd.length] = node["node_url"];
 
+                    graph.addNode("node"+num);
+                    graph.addLink(p["id"], "node"+num);
+
                     //draw node
 
-                    var location = get_location({"parent_id":nodes[node["node_parent"]]["id"],"sibling_num":p_chd.length-1});
-                    var radius = get_radius({"one_num":one_depth_num, "depth":depth});
-                    svg.append("circle")
-                            .attr("r", radius)
-                            .attr("cx", location["x"])
-                            .attr("cy", location["y"])
-                            .attr("id", nodes[node["node_url"]]["id"])
-                            .attr("fill", "steelblue");
-
-                    //draw line
-                    var p_circle = d3.select("#"+p["id"]);
-                    var x1 = p_circle.attr("cx");
-                    var y1 = p_circle.attr("cy");
-                    svg.append("line")
-                            .attr("x1",x1)
-                            .attr("y1",y1)
-                            .attr("x2",location["x"])
-                            .attr("y2",location["y"])
-                            .attr("stroke-width", 1)
-                            .attr("stroke", "gray")
-                            .call(force.drag);
+//                    var location = get_location({"parent_id":nodes[node["node_parent"]]["id"],"sibling_num":p_chd.length-1});
+//                    var radius = get_radius({"one_num":one_depth_num, "depth":depth});
+//                    svg.append("circle")
+//                            .attr("r", radius)
+//                            .attr("cx", location["x"])
+//                            .attr("cy", location["y"])
+//                            .attr("id", nodes[node["node_url"]]["id"])
+//                            .attr("fill", "steelblue");
+//
+//                    //draw line
+//                    var p_circle = d3.select("#"+p["id"]);
+//                    var x1 = p_circle.attr("cx");
+//                    var y1 = p_circle.attr("cy");
+//                    svg.append("line")
+//                            .attr("x1",x1)
+//                            .attr("y1",y1)
+//                            .attr("x2",location["x"])
+//                            .attr("y2",location["y"])
+//                            .attr("stroke-width", 1)
+//                            .attr("stroke", "gray")
+//                            .call(force.drag);
                 }
             };
             ws.onclose = function()

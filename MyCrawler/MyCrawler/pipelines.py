@@ -20,8 +20,6 @@ class MycrawlerPipeline(object):
 
 
     def process_item(self, item, spider):
-
-        print "processing item kajsdfjsalkfjslakdfjkl"
         line = json.dumps(dict(item))
         self.q_channel.basic_publish(exchange='', routing_key='hello', body=line)
         return item

@@ -51,7 +51,9 @@ function myGraph(vis) {
     }
 
     // set up the D3 visualisation in the specified element
-
+    var w = force_dimension.width,
+        h = force_dimension.height,
+        r = circle_base_radius;
     var force = d3.layout.force()
         .gravity(.05)
         .distance(100)
@@ -87,7 +89,7 @@ function myGraph(vis) {
             .call(force.drag);
 
         nodeEnter.append("circle")
-            .attr("r", 10)
+            .attr("r", circle_base_radius)
             .attr("fill", function (d) {
                 if(!d.node_parent) return "red";
                 var type = d.node_type;
@@ -107,12 +109,17 @@ function myGraph(vis) {
         node.exit().remove();
 
         force.on("tick", function() {
+
+            //node.attr("cx", function(d) { return d.x = Math.max(r, Math.min(w - r, d.x)); })
+            //    .attr("cy", function(d) { return d.y = Math.max(r, Math.min(h - r, d.y)); });
+
             link.attr("x1", function(d) { return d.source.x; })
                 .attr("y1", function(d) { return d.source.y; })
                 .attr("x2", function(d) { return d.target.x; })
                 .attr("y2", function(d) { return d.target.y; });
 
             node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
         });
 
         // Restart the force layout.

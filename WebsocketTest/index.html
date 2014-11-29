@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+    var ws1 = new WebSocket("ws://localhost:9988/echo");
+    ws1.onopen = function () {
+        console.log("ws1 open");
+    }
+
+    ws1.onclose = function(){
+        console.log("ws1 close");
+    }
+    console.log("w1 status: "+ws1.readyState);
+
+    var ws1 = new WebSocket("ws://localhost:9988/echo");
+    ws1.onopen = function () {
+        console.log("ws2 open");
+    }
+
+    ws1.onclose = function(){
+        console.log("ws2 close");
+    }
+    console.log("w1 status: "+ws1.readyState);
+
+
+</script>
+
+
+
+</body>
+</html>

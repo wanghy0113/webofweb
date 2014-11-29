@@ -29,6 +29,7 @@
 
 import pika
 import subprocess
+import json
 
 class Message(object):
     request = None
@@ -66,13 +67,18 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    print "Should start transfer data!"
-    print request
-    Message.request = request
-    print Message.request
-    revive_spider('http://7ia7ia.com')
-    _connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    while True:
+        line = request.ws_stream.receive_message()
+        if line is not None:
+            dic = json.loads(line)
+            if dic["url"] is not None:
+                print dic["url"]
+                revive_spider(dic["url"])
+                break;
 
+    print "Should start transfer data!"
+    Message.request = request
+    _connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     _channel = _connection.channel()
     _channel.queue_declare(queue='hello')
     _channel.basic_consume(callback, queue='hello', no_ack=True)

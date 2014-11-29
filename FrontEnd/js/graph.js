@@ -1,24 +1,20 @@
 /**
  * Created by HongyiWang on 11/28/14.
  */
-function myGraph(el) {
+function myGraph(vis) {
 
 
-    var url_nodes = [];
-
-    this.addUrl_Node = function (node) {
-        url_nodes
-    }
 
     // Add and remove elements on the graph object
-    this.addNode = function (id) {
-        nodes.push({"id":id});
+    this.addNode = function (node) {
+        nodes.push(node);
+        console.log("node id: "+node.id);
         update();
     }
 
-    this.removeNode = function (id) {
+    this.removeNode = function (node) {
         var i = 0;
-        var n = findNode(id);
+        var n = findNode(node.id);
         while (i < links.length) {
             if ((links[i]['source'] === n)||(links[i]['target'] == n)) links.splice(i,1);
             else i++;
@@ -55,21 +51,17 @@ function myGraph(el) {
     }
 
     // set up the D3 visualisation in the specified element
-    var w = $(el).innerWidth(),
-        h = $(el).innerHeight();
-    console.log("w: "+w+"  h: "+h);
-    var vis = this.vis = d3.select(el).append("svg:svg")
-        .attr("width", w)
-        .attr("height", h);
 
     var force = d3.layout.force()
         .gravity(.05)
         .distance(100)
         .charge(-100)
-        .size([w, h]);
+        .size([force_dimension.width, force_dimension.height]);
 
     var nodes = force.nodes(),
         links = force.links();
+
+    var p = d3.scale.category20();
 
     var update = function () {
 
@@ -77,7 +69,13 @@ function myGraph(el) {
             .data(links, function(d) { return d.source.id + "-" + d.target.id; });
 
         link.enter().insert("line")
-            .attr("class", "link");
+            .attr("class", "link")
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; })
+            .attr("stroke-width", 1)
+            .attr("stroke", "gray");
 
         link.exit().remove();
 
@@ -90,7 +88,15 @@ function myGraph(el) {
 
         nodeEnter.append("circle")
             .attr("r", 10)
-            .attr("fill", "steelblue");
+            .attr("fill", function (d) {
+                if(!d.node_parent) return "red";
+                var type = d.node_type;
+                if(type.indexOf("html")!=-1) return p(1);
+                if(type.indexOf("pdf")!=-1) return p(2);
+                if(type.indexOf("csv")!=-1) return p(3);
+                return "steelblue";
+
+            });
 
         //nodeEnter.append("text")
         //    .attr("class", "nodetext")

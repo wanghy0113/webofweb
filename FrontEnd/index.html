@@ -7,140 +7,30 @@
     <script type="text/javascript" src="js/graph.js" charset="utf-8"></script>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <link href="css/layout.css" rel="stylesheet", type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 </head>
 <body>
-<div id="sse">
-    <a href="javascript:WebSocketInit()">Run WebSocket</a>
+<div class="navbar">
+    <a href="." class="home_link" style="height:41px; width:41px; float:left; text-align:center;">
+        <span class="icon-home"></span>
+    </a>
+    <div class="search">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <input id="start_url" type="text" class="form-control">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" onclick="startWeave()">Go!</button>
+                    </span>
+                </div><!-- /input-group -->
+            </div><!-- /.col-lg-6 -->
+        </div><!-- /.row -->
+    </div>
+    <a href="javascript:startWeave('http://www.7ia7ia.com')"> Start weaving (http://7ia7ia.com -> Yizhen Jia's homepage)</a>
 </div>
-<div id="graph">
+<div id="main-area">
 </div>
-<script type="text/javascript">
-    //main area
-    var hei = 20;
-    var svg = d3.select("body").append("svg").attr("width",main_dimension.width).attr("height",main_dimension.height);
-    var theta_rate = [0, 1, 1/2, 3/2, 1/4, 3/4, 5/4, 7/4];
-
-
-    function WebSocketInit()
-    {
-        if ("WebSocket" in window)
-        {
-            // Let us open a web socket
-            //var ws = new WebSocket("ws://54.148.253.239:61616/echo");
-
-            var graph = new myGraph("#graph");
-            var ws = new WebSocket("ws://localhost:9988/echo");
-            var one_depth_num = 0;
-            var nodes = {};
-            var links = {};
-            var num = 0;
-            ws.onmessage = function (evt)
-            {
-                var received_msg = evt.data+"";
-                var node = JSON.parse(received_msg.substring(1,received_msg.length-1));
-                var depth = node.node_depth;
-                //update max depth
-                if(depth==1) one_depth_num++;
-                if(!nodes[node["node_url"]])
-                {
-                    num++;
-                    if(depth==0)
-                    {
-                        //if it's the first node
-                        nodes[node["node_url"]] = {"id":"node"+num,"depth":depth, "children":[], "parents":[]};
-                        graph.addNode("node"+num);
-//                        svg.append("circle")
-//                                .attr("r", circle_base_radius)
-//                                .attr("cx", center_point.cx)
-//                                .attr("cy", center_point.cy)
-//                                .attr("id", nodes[node["node_url"]]["id"])
-//                                .attr("fill", "red");
-                        return;
-                    }
-                    var p = nodes[node["node_parent"]];
-                    //add new node
-                    nodes[node["node_url"]] = {"id":"node"+num, "depth":depth, "children":[], "parents":[node["node_parent"]]};
-                    var p_chd = p["children"];
-                    //add new node to its parent's children
-                    p_chd[p_chd.length] = node["node_url"];
-
-                    graph.addNode("node"+num);
-                    graph.addLink(p["id"], "node"+num);
-
-                    //draw node
-
-//                    var location = get_location({"parent_id":nodes[node["node_parent"]]["id"],"sibling_num":p_chd.length-1});
-//                    var radius = get_radius({"one_num":one_depth_num, "depth":depth});
-//                    svg.append("circle")
-//                            .attr("r", radius)
-//                            .attr("cx", location["x"])
-//                            .attr("cy", location["y"])
-//                            .attr("id", nodes[node["node_url"]]["id"])
-//                            .attr("fill", "steelblue");
-//
-//                    //draw line
-//                    var p_circle = d3.select("#"+p["id"]);
-//                    var x1 = p_circle.attr("cx");
-//                    var y1 = p_circle.attr("cy");
-//                    svg.append("line")
-//                            .attr("x1",x1)
-//                            .attr("y1",y1)
-//                            .attr("x2",location["x"])
-//                            .attr("y2",location["y"])
-//                            .attr("stroke-width", 1)
-//                            .attr("stroke", "gray")
-//                            .call(force.drag);
-                }
-            };
-            ws.onclose = function()
-            {
-                // websocket is closed.
-            };
-        }
-        else
-        {
-            // The browser doesn't support WebSocket
-            alert("WebSocket NOT supported by your Browser!");
-        }
-    }
-
-    function get_radius(parameters)
-    {
-        var one_num = parameters.one_num;
-        if(one_num==0) return circle_base_radius;
-        var depth = parameters.depth;
-        var shrink_time = parseInt((one_num-1)/24);
-        var base = circle_base_radius/Math.pow(2, shrink_time);
-        return base*Math.pow(circle_radius_decrease_rate, depth);
-    }
-
-    function get_location(parameters)
-    {
-        var parent_id = parameters["parent_id"];
-        var parent_circle = svg.select("#"+parent_id);
-        var p_x = parent_circle.attr("cx");
-        var p_y = parent_circle.attr("cy");
-        var p_r = parent_circle.attr("r");
-        console.log("parent x: "+p_x+"  y: "+p_y+"  r: "+p_r);
-        var orbit = parseInt(parameters["sibling_num"]/8);  //0-based orbit number
-        var index = parseInt(parameters["sibling_num"]%8);  //0-based orbit index
-        var pcs_r = (orbit+1)*p_r*(2*circle_radius_decrease_rate+3*circle_radius_decrease_rate*circle_radius_decrease_rate)/(3*circle_radius_decrease_rate-1);
-        var pcs_theta = Math.PI*theta_rate[index];
-        if(orbit%2>0) pcs_theta+=Math.PI/8;
-        console.log("orbit: "+orbit+" index: "+index+" pcs_r: "+pcs_r+" pcs_theta: "+pcs_theta);
-        var offet_x = pcs_r*Math.cos(pcs_theta);
-        var offet_y = pcs_r*Math.sin(pcs_theta);
-        console.log(" x: "+offet_x+"  y: "+offet_y);
-        var x = offet_x+parseFloat(p_x);
-        var y = offet_y+parseFloat(p_y);
-        console.log(" fx: "+x+"  fy: "+y);
-        return {"x":x, "y":y};
-
-    }
-</script>
-
-
-
 
 </body>
+<script type="text/javascript" src="js/websocket.js"></script>
 </html>

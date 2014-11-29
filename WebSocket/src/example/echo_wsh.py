@@ -30,31 +30,18 @@
 import pika
 import subprocess
 import json
+import uuid
 
 class Message(object):
     request = None
 
 _crawler_path = "~/Desktop/WebOfWeb/MyCrawler/MyCrawler"
 _spider_name = "single_url_spider"
+_uuid = uuid.uuid4()
 _p = None
-def callback(ch, method, properties, body):
-    #_message_queue.append(body)
-    print "Message received!"
-    print Message.request
-    if Message.request is not None:
-        print "_request is not none"
-        message = "%r" % (body,)
-        print body
-        print message
-        if isinstance(message, unicode):
-            print "message is unicode"
-            Message.request.ws_stream.send_message(message, binary=False)
-        else:
-            print "message is not unicode"
-            Message.request.ws_stream.send_message(message, binary=False) 
 
 def revive_spider(url):
-    command = "cd %s;scrapy crawl %s -a s_url=%s" % (_crawler_path, _spider_name, url)
+    command = "cd %s;scrapy crawl %s -a s_url=%s -a uuid=%s" % (_crawler_path, _spider_name, url, _uuid)
     _p = subprocess.Popen(command, shell=True)
     return command
 
@@ -67,21 +54,43 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
+    s_url = ""
+    print "Websocket: client connected"
     while True:
+        print "Websocket: wating for start command"
         line = request.ws_stream.receive_message()
+        print "Websocket: message received %s" % line
         if line is not None:
             dic = json.loads(line)
-            if dic["url"] is not None:
-                print dic["url"]
-                revive_spider(dic["url"])
+            print "Websocket: ", dic, dic["command"]
+            if dic["url"] is not None and dic["command"] == "start":
+                print "Websocket: receive requested command: %s url: %s" % (dic["command"], dic["url"],)
+                s_url = dic["url"]                
                 break;
-
-    print "Should start transfer data!"
-    Message.request = request
+    print "Websocket: Should start transfer data!"
+    print "Websocket: uuid is : %s" % _uuid
+    revive_spider(s_url)
     _connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     _channel = _connection.channel()
-    _channel.queue_declare(queue='hello')
-    _channel.basic_consume(callback, queue='hello', no_ack=True)
-    _channel.start_consuming()
+    queue_name = "%s" % _uuid
+    _channel.queue_declare(queue_name)
+    print "Websocket: here!!!!!!!!!"
+    while True:
+        '''line = request.ws_stream.receive_message()
+        print "Websocket: message received %s" % line
+        if line is not None:
+            dic = json.loads(line)
+            if dic["command"] == "stop":
+                print "Websocket: receive requested command: %s url: %s" % (dic["command"], dic["url"],)
+                return    '''
+        method_frame, header_frame, body = _channel.basic_get(queue_name)
+        if method_frame:
+            print "Websocket: %s" % body
+            request.ws_stream.send_message(body, binary=False)
+
+
+        
+
+    
 
 # vi:sts=4 sw=4 et

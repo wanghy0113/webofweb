@@ -1,32 +1,57 @@
-<!DOCTYPE HTML>
 <html>
 <head>
 
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/config.js" charset="utf-8"></script>
     <script type="text/javascript" src="js/graph.js" charset="utf-8"></script>
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="js/content.js" charset="utf-8"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href="css/layout.css" rel="stylesheet", type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 </head>
 <body>
-<div class="navbar">
-    <a href="." class="home_link" style="height:41px; width:41px; float:left; text-align:center;">
-        <span class="icon-home"></span>
-    </a>
-    <div class="search">
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="http://www.xioix.co">Web weaver</a>
+        </div>
         <div class="row">
             <div class="col-lg-6">
                 <div class="input-group">
+                    <span class="input-group-addon">http://</span>
                     <input id="start_url" type="text" class="form-control">
-                    <span class="input-group-btn">
+                    <div class="input-group-btn">
+                        <div class="btn-group">
+                            <button id="max-node" type="button" class="btn btn-info" data-toggle="dropdown">Max:500</button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="javascript:choose_max_node(100)">100</a></li>
+                                <li><a href="javascript:choose_max_node(200)">200</a></li>
+                                <li><a href="javascript:choose_max_node(300)">300</a></li>
+                                <li><a href="javascript:choose_max_node(500)">500</a></li>
+                                <li><a href="javascript:choose_max_node(1000)">1000</a></li>
+                            </ul>
+                        </div>
+                        <div class="btn-group">
+                            <button id="max-depth" type="button" class="btn btn-success" data-toggle="dropdown">Depth:10</button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="javascript:choose_max_depth(5)">5</a></li>
+                                <li><a href="javascript:choose_max_depth(10)">10</a></li>
+                                <li><a href="javascript:choose_max_depth(20)">20</a></li>
+                                <li><a href="javascript:choose_max_depth(30)">30</a></li>
+                                <li><a href="javascript:choose_max_depth(50)">50</a></li>
+                            </ul>
+                        </div>
                         <button class="btn btn-default" type="button" onclick="startWeave()">Go!</button>
-                    </span>
-                </div><!-- /input-group -->
-            </div><!-- /.col-lg-6 -->
-        </div><!-- /.row -->
+                    </div>
+                </div>
+            </div><!-- /input-group -->
+        </div>
+        <p class="navbar-right">Signed in as <a href="http://www.xioix.co" class="navbar-link">by Hongyi Wang</a></p>
     </div>
-</div>
+</nav>
+
 <div id="main-area">
 </div>
 

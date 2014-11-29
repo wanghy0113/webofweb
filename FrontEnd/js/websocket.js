@@ -11,6 +11,7 @@ if ("WebSocket" in window)
         console.log("start url: "+url);
         ws.close();
         ws = new WebSocket("ws://localhost:9988/echo");
+        //ws = new WebSocket("ws://54.148.253.239:61616/echo");
         //remove previous svg
         d3.select("#svg-component").remove();
 
@@ -29,14 +30,14 @@ if ("WebSocket" in window)
         ws.onopen = function()
         {
             console.log("socket opened!");
-            var weave_signal = {"url":url};
+            var weave_signal = {"url":url, "command":"start", "max_node":max_node, "max_depth":max_depth};
             ws.send(JSON.stringify(weave_signal));
             console.log(JSON.stringify(weave_signal));
         }
         ws.onmessage = function (evt)
         {
             var received_msg = evt.data+"";
-            var node = JSON.parse(received_msg.substring(1,received_msg.length-1));
+            var node = JSON.parse(received_msg);
             var depth = node.node_depth;
             if(!url_hash[node["node_url"]])
             {

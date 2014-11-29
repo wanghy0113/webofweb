@@ -4,18 +4,21 @@ from scrapy.selector import HtmlXPathSelector
 from tld import get_tld
 from MyCrawler.items import url_node
 from urlparse import urlparse, urljoin
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-channel.queue_declare('hello')
+
+print "*****************************\nstart crawling!"
+queue_name = ""
 
 class SingleUrlSpider(scrapy.Spider):
   name = 'single_url_spider'
   crawled_urls = set()
   #urls = None
-  def __init__(self, s_url=None, *args, **kwargs):
+  def __init__(self, s_url=None, uuid="default_queue", *args, **kwargs):
     self.start_urls = [s_url]
     self.allowed_domains = [get_tld(s_url)]
+    global queue_name 
+    queue_name = uuid;
     print get_tld(s_url)
+    
     #self.allowed_domains = ['7ia7ia.com']
     super(SingleUrlSpider, self).__init__(*args, **kwargs)
     
@@ -60,6 +63,8 @@ class SingleUrlSpider(scrapy.Spider):
         next_url = self.get_full_url(sel.xpath('@href').extract()[0], response.url)
         text = sel.xpath('text()').extract()
         image_url = sel.xpath('image/@src').extract()
+        if len(image_url)>0:
+          image_url = self.get_full_url(image_url[0], response.url)
         next_request_headers = {'ele_image':image_url, 'ele_text':text}
         next_request = scrapy.Request(next_url, callback=self.parse, headers=next_request_headers)
         #if(item['node_url'] not in self.crawled_urls):

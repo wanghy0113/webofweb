@@ -9,7 +9,7 @@ import json
 import pika
 from spiders import single_url_spider
 
-_q_name = single_url_spider.queue_name
+_q_name = single_url_spider._queue_name
 
 class MycrawlerPipeline(object):
     q_connection = None
@@ -19,7 +19,6 @@ class MycrawlerPipeline(object):
     def __init__(self):
         self.q_connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
         self.q_channel = self.q_connection.channel()
-
         self.q_name = _q_name
         print self.q_name
         self.q_channel.queue_declare(self.q_name)

@@ -4,14 +4,14 @@
 if ("WebSocket" in window)
 {
     // Let us open a web socket
-    //var ws = new WebSocket("ws://54.148.253.239:61616/echo");
-    var ws = new WebSocket("ws://localhost:9988/echo");
+    var ws = new WebSocket("ws://54.148.253.239:61616/echo");
+    //var ws = new WebSocket("ws://localhost:9988/echo");
     function startWeave() {
-        var url = d3.select("#start_url").property("value");
+        var url = 'http://'+d3.select("#start_url").property("value");
         console.log("start url: "+url);
         ws.close();
-        ws = new WebSocket("ws://localhost:9988/echo");
-        //ws = new WebSocket("ws://54.148.253.239:61616/echo");
+        //ws = new WebSocket("ws://localhost:9988/echo");
+        ws = new WebSocket("ws://54.148.253.239:61616/echo");
         //remove previous svg
         d3.select("#svg-component").remove();
 

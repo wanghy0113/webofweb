@@ -15,5 +15,8 @@ NEWSPIDER_MODULE = 'MyCrawler.spiders'
 ITEM_PIPELINES = {
 	'MyCrawler.pipelines.MycrawlerPipeline' : 800
 }
+
+LOG_LEVEL = 'ERROR'
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'MyCrawler (+http://www.yourdomain.com)'

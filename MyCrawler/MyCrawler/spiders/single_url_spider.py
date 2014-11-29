@@ -6,18 +6,23 @@ from MyCrawler.items import url_node
 from urlparse import urlparse, urljoin
 
 print "*****************************\nstart crawling!"
-queue_name = ""
-
+_queue_name = ""
+_max_node = 0;
+_max_depth = 0;
 class SingleUrlSpider(scrapy.Spider):
   name = 'single_url_spider'
   crawled_urls = set()
   #urls = None
-  def __init__(self, s_url=None, uuid="default_queue", *args, **kwargs):
+  def __init__(self, s_url=None, uuid="default_queue", max_depth=0, max_node=0, *args, **kwargs):
     self.start_urls = [s_url]
     self.allowed_domains = [get_tld(s_url)]
-    global queue_name 
-    queue_name = uuid;
-    print get_tld(s_url)
+    global _queue_name 
+    _queue_name = uuid
+    global _max_depth
+    _max_depth = int(max_depth)
+    global _max_node
+    _max_node = int(max_node)
+    print "crawl parameter: ", "max depth: ", _max_depth, "max node: ", _max_node
     
     #self.allowed_domains = ['7ia7ia.com']
     super(SingleUrlSpider, self).__init__(*args, **kwargs)
@@ -57,8 +62,10 @@ class SingleUrlSpider(scrapy.Spider):
     item['node_ele'] = {'image': response.request.headers.get('ele_image'), 
                         'text' : response.request.headers.get('ele_text'),}
     item['node_type'] = response.headers.get('Content-Type')
+    self.crawled_urls.add(response.url)
+    print "Current node number: ", len(self.crawled_urls)
     yield item
-    if 'html' in response.headers.get('Content-Type') :
+    if 'html' in response.headers.get('Content-Type') and response.meta['depth']<_max_depth:
       for sel in response.xpath('//a'):
         next_url = self.get_full_url(sel.xpath('@href').extract()[0], response.url)
         text = sel.xpath('text()').extract()
@@ -69,6 +76,7 @@ class SingleUrlSpider(scrapy.Spider):
         next_request = scrapy.Request(next_url, callback=self.parse, headers=next_request_headers)
         #if(item['node_url'] not in self.crawled_urls):
         #  self.crawled_urls.add(item['node_url'])
-        yield next_request
+        if len(self.crawled_urls) < _max_node:
+          yield next_request
     
   

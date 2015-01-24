@@ -67,7 +67,7 @@ function myGraph(vis) {
 
     var update = function () {
 
-        var link = vis.selectAll("line.link")
+        var link = vis.selectAll("line.link") //why line.link?
             .data(links, function(d) { return d.source.id + "-" + d.target.id; });
 
         link.enter().insert("line")
@@ -77,7 +77,8 @@ function myGraph(vis) {
             .attr("x2", function(d) { return d.target.x; })
             .attr("y2", function(d) { return d.target.y; })
             .attr("stroke-width", 1)
-            .attr("stroke", "gray");
+            .attr("stroke", "gray")
+            .attr("opacity", "0.4");
 
         link.exit().remove();
 
@@ -98,6 +99,18 @@ function myGraph(vis) {
                 if(type.indexOf("csv")!=-1) return p(3);
                 return "steelblue";
 
+            })
+            .on("mouseover", function(d){
+                //when mouse over, display information of the node
+                console.log("mouse over");
+                pop_up_info_window(d);
+
+            })
+            .on("mouseout", function(d){
+                fade_out_info_window(d);
+            })
+            .on("click", function(d){
+                window.open(d["node_url"]);
             });
 
         //nodeEnter.append("text")
